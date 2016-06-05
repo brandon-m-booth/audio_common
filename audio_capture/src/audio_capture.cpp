@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <gst/gst.h>
-#include <gst/app/gstappsink.h>
+#include <gst/base/gstbasesink.h>
 #include <boost/thread.hpp>
 
 #include <ros/ros.h>
@@ -30,7 +30,7 @@ namespace audio_transport
         ros::param::param<int>("~sample_rate", _sample_rate, 16000);
 
         // The destination of the audio
-        ros::param::param<std::string>("~dst", dst_type, "appsink");
+        ros::param::param<std::string>("~dst", dst_type, "basesink");
 
         // The source of the audio
         //ros::param::param<std::string>("~src", source_type, "alsasrc");
@@ -46,9 +46,9 @@ namespace audio_transport
         g_object_unref(_bus);
 
         // We create the sink first, just for convenience
-        if (dst_type == "appsink")
+        if (dst_type == "basesink")
         {
-          _sink = gst_element_factory_make("appsink", "sink");
+          _sink = gst_element_factory_make("basesink", "sink");
           g_object_set(G_OBJECT(_sink), "emit-signals", true, NULL);
           g_object_set(G_OBJECT(_sink), "max-buffers", 100, NULL);
           g_signal_connect( G_OBJECT(_sink), "new-sample",
@@ -131,13 +131,13 @@ namespace audio_transport
         _pub.publish(msg);
       }
 
-      static GstFlowReturn onNewBuffer (GstAppSink *appsink, gpointer userData)
+      static GstFlowReturn onNewBuffer (GstBaseSink *basesink, gpointer userData)
       {
         RosGstCapture *server = reinterpret_cast<RosGstCapture*>(userData);
         GstMapInfo map;
 
         GstSample *sample;
-        g_signal_emit_by_name(appsink, "pull-sample", &sample);
+        g_signal_emit_by_name(basesink, "pull-sample", &sample);
 
         GstBuffer *buffer = gst_sample_get_buffer(sample);
 

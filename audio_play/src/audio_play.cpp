@@ -1,5 +1,5 @@
 #include <gst/gst.h>
-#include <gst/app/gstappsrc.h>
+#include <gst/base/gstbasesrc.h>
 #include <ros/ros.h>
 #include <boost/thread.hpp>
 
